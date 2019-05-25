@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Login page</title>
+</head>
+<body>
+	
+	<input id='na' type="text" name="name" value="John Smith" />
+    <br/>
+    <input id='pa' type="text" name="password" value='Secret123' />
+    
+    <input type="button" value="Submit" onclick='fetchMePls()' />
+    <br/>
+    <br/>
+    <input type="button" value="Public Endpoint" onclick='publicEndpoint()' />
+    <br/>
+    <br/>
+    <input type="button" value="Protected Endpoint" onclick='protectedEndpoint()' />
+	<br/>
+	<br/><br/>
+	<input id='info' value="" size='70'/>
+	
+    <script>
+
+        const na = document.querySelector('#na');
+        const pa = document.querySelector('#pa');
+        const info = document.querySelector('#info');
+        console.log(na.value, pa.value);
+		
+		
+		function fetchMePls() {
+			
+			let body = `name=${na.value}&password=${pa.value}`;
+            
+            fetch('./res/loginCookie', {
+                method: 'POST',
+                body: body,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+                .then(r => {
+                    
+                    info.value = 'Cookie: ' + getCookie('bearer');
+                    
+                    console.log('cookie: ' + document.cookie);
+            		console.log('cookie: ' + getCookie('bearer'));
+                    
+                    return r.text()
+                })
+                .then(t => console.log(t));
+        }
+		
+        
+        function protectedEndpoint() {
+
+            fetch('./res/protected', {
+                method: 'GET',
+            })
+                .then(r => {
+                    return r.text()
+                })
+                .then(t => {
+                	info.value = 'Private: ' + t;
+                	console.log(t);
+                });
+        }
+        
+        
+        function publicEndpoint() {
+
+            fetch('./res/public')
+                .then(r => r.text())
+                .then(t => {
+                	info.value = 'Public: ' + t;
+                	console.log(t)
+                });
+        }
+        
+        
+        function getCookie(cname) {
+        	var name = cname + "=";
+        	var decodedCookie = decodeURIComponent(document.cookie);
+        	var ca = decodedCookie.split(';');
+        	for(var i = 0; i <ca.length; i++) {
+        	    var c = ca[i];
+        	    while (c.charAt(0) == ' ') {
+        	        c = c.substring(1);
+        	    }
+        	    if (c.indexOf(name) == 0) {
+        	        return c.substring(name.length, c.length);
+        	    }
+        	}
+        	return "";
+        }
+        
+    </script>
+</body>
+</html>

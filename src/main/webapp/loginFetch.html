@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Login page</title>
+</head>
+<body>
+	
+	<input id='na' type="text" name="name" value="John Smith" />
+    <br/>
+    <input id='pa' type="text" name="password" value='Secret123' />
+    
+    <input type="button" value="Submit" onclick='fetchMePls()' />
+    <br/>
+    <br/>
+    <input type="button" value="Public Endpoint" onclick='publicEndpoint()' />
+    <br/>
+    <br/>
+    <input type="button" value="Protected Endpoint" onclick='protectedEndpoint()' />
+	<br/>
+	<br/><br/>
+	<input id='info' value="" size='70'/>
+	
+    <script>
+
+        const na = document.querySelector('#na');
+        const pa = document.querySelector('#pa');
+        const info = document.querySelector('#info');
+        console.log(na.value, pa.value);
+		var bearer = '';
+		
+
+        function fetchMePls() {
+			//Doesnt work
+            //let fd = new FormData();
+            //fd.append('login', lo.value);
+            //fd.append('password', pa.value);
+            
+            //'login=321&password=231',
+			let body = `name=${na.value}&password=${pa.value}`;
+            
+            fetch('./res/login', {
+                method: 'POST',
+                body: body,
+                //body: fd,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+                .then(r => {
+                    console.log(Array.from(r.headers));
+                    bearer = r.headers.get('Authorization');
+                    info.value = 'Token: ' + bearer;
+                    console.log(bearer);
+                    
+                    return r.text()
+                })
+                .then(t => console.log(t));
+        }
+
+        function protectedEndpoint() {
+
+            fetch('./res/protected', {
+                method: 'GET',
+                headers: {
+                	'Authorization': bearer
+                }
+            })
+                .then(r => {
+                    console.log(Array.from(r.headers));
+                    return r.text()
+                })
+                .then(t => {
+                	info.value = 'Private: ' + t;
+                	console.log(t);
+                });
+        }
+        
+        function publicEndpoint() {
+
+            fetch('./res/public')
+                .then(r => r.text())
+                .then(t => {
+                	info.value = 'Public: ' + t;
+                	console.log(t)
+                });
+        }
+        
+        
+    </script>
+</body>
+</html>

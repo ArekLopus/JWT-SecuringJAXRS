@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Login page</title>
+</head>
+<body>
+	
+	<input id='na' type="text" name="name" value="John Smith" />
+    <br/>
+    <input id='pa' type="text" name="password" value='Secret123' />
+    
+    <input type="button" value="Submit" onclick='logIn()' />
+    <br/>
+    <br/>
+    <input type="button" value="Public Endpoint" onclick='publicEndpoint()' />
+    <br/>
+    <br/>
+    <input type="button" value="Protected Endpoint" onclick='protectedEndpoint()' />
+	<br/>
+	<br/><br/>
+	<input id='token' value="Token:" size='70'/>
+	<br/>
+	<input id='info' value="" size='70'/>
+	
+    <script>
+
+        const na = document.querySelector('#na');
+        const pa = document.querySelector('#pa');
+        const token = document.querySelector('#token');
+        const info = document.querySelector('#info');
+        console.log(na.value, pa.value);
+		var bearer = '';
+		
+
+        function logIn() {
+			
+			let body = `name=${na.value}&password=${pa.value}`;
+            
+            fetch('./res/login', {
+                method: 'POST',
+                body: body,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+            .then(r => {
+                console.log(Array.from(r.headers));
+                bearer = r.headers.get('Authorization');
+                token.value = 'Token: ' + bearer;
+                console.log(bearer);
+                
+                return r.text()
+            })
+            .then(t => console.log(t));
+        }
+
+        function protectedEndpoint() {
+
+            fetch('./res/protected', {
+                method: 'GET',
+                headers: {
+                	'Authorization': bearer
+                }
+            })
+            .then(r => {
+                takeAuthorizationHeader(r.headers)
+                console.log(Array.from(r.headers));
+                return r.text()
+            })
+            .then(t => {
+                info.value = 'Private: ' + t;
+                console.log(t);
+            });
+        }
+        
+        function publicEndpoint() {
+
+            fetch('./res/public', {
+                method: 'GET',
+                headers: {
+                	'Authorization': bearer
+                }
+            })
+            .then(r => {
+                takeAuthorizationHeader(r.headers)
+                return r.text()
+            })
+            .then(t => {
+                info.value = 'Public: ' + t;
+                console.log(t)
+            });
+        }
+        
+        function takeAuthorizationHeader(headers) {
+        	
+        	if(headers.has('Authorization')) {
+                console.log('has Authorization');
+                
+                if(headers.get('Authorization') === 'expired') {
+                	bearer = 'expired';
+                } else {
+                	bearer = headers.get('Authorization');
+                }
+                
+                token.value = 'Token: ' + bearer;
+                console.log(bearer)
+            }
+        }
+        
+    </script>
+</body>
+</html>
